@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Snake Game 🐍</title>
   <style>
     body {
@@ -12,28 +12,53 @@
       margin: 0;
     }
     canvas {
+      background: #222;
       display: block;
       margin: 20px auto;
-      background: #222;
       border: 2px solid #555;
     }
     #score {
-      font-size: 1.4em;
-      margin-top: 10px;
+      font-size: 1.3em;
+    }
+    #controls {
+      margin: 20px auto;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    button {
+      background: #333;
+      color: #0f0;
+      font-size: 1.1em;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+    }
+    button:hover {
+      background: #555;
     }
   </style>
 </head>
 <body>
   <h1>🐍 Snake Game</h1>
   <div id="score">Score: 0</div>
-  <canvas id="game" width="400" height="400"></canvas>
+  <canvas id="game" width="400" height="400" tabindex="1"></canvas>
+
+  <!-- Optional Touch Controls -->
+  <div id="controls">
+    <button onclick="turn('up')">⬆️</button>
+    <button onclick="turn('left')">⬅️</button>
+    <button onclick="turn('down')">⬇️</button>
+    <button onclick="turn('right')">➡️</button>
+  </div>
+
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
+    canvas.focus();
 
     const tileSize = 20;
     const tileCount = canvas.width / tileSize;
-
     let snake = [{ x: 10, y: 10 }];
     let direction = { x: 1, y: 0 };
     let nextDirection = { x: 1, y: 0 };
@@ -47,11 +72,18 @@
       };
     }
 
+    function turn(dir) {
+      if (dir === 'up' && direction.y !== 1) nextDirection = { x: 0, y: -1 };
+      if (dir === 'down' && direction.y !== -1) nextDirection = { x: 0, y: 1 };
+      if (dir === 'left' && direction.x !== 1) nextDirection = { x: -1, y: 0 };
+      if (dir === 'right' && direction.x !== -1) nextDirection = { x: 1, y: 0 };
+    }
+
     document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowUp" && direction.y !== 1) nextDirection = { x: 0, y: -1 };
-      if (e.key === "ArrowDown" && direction.y !== -1) nextDirection = { x: 0, y: 1 };
-      if (e.key === "ArrowLeft" && direction.x !== 1) nextDirection = { x: -1, y: 0 };
-      if (e.key === "ArrowRight" && direction.x !== -1) nextDirection = { x: 1, y: 0 };
+      if (e.key === "ArrowUp") turn("up");
+      if (e.key === "ArrowDown") turn("down");
+      if (e.key === "ArrowLeft") turn("left");
+      if (e.key === "ArrowRight") turn("right");
     });
 
     function gameLoop() {
@@ -62,20 +94,18 @@
         y: snake[0].y + direction.y
       };
 
-      // Game over conditions
       if (
         head.x < 0 || head.y < 0 ||
         head.x >= tileCount || head.y >= tileCount ||
-        snake.some(seg => seg.x === head.x && seg.y === head.y)
+        snake.some(s => s.x === head.x && s.y === head.y)
       ) {
-        alert("💀 Game Over! Final Score: " + score);
+        alert("Game over! Final score: " + score);
         location.reload();
         return;
       }
 
       snake.unshift(head);
 
-      // Eat food
       if (head.x === food.x && head.y === food.y) {
         score += 10;
         document.getElementById("score").textContent = "Score: " + score;
@@ -91,13 +121,11 @@
       ctx.fillStyle = "#222";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw snake
       ctx.fillStyle = "#0f0";
       for (let s of snake) {
         ctx.fillRect(s.x * tileSize, s.y * tileSize, tileSize - 2, tileSize - 2);
       }
 
-      // Draw food
       ctx.fillStyle = "#f00";
       ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize - 2, tileSize - 2);
     }
