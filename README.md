@@ -2,68 +2,96 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Snake Game 🐍</title>
+  <title>Snake GameBoy Edition 🐍</title>
   <style>
     body {
-      background: #111;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      text-align: center;
+      background: #1a1a1a;
+      font-family: monospace;
+      color: #0f0;
       margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+
+    h1 {
+      margin: 20px;
+      color: #0f0;
+    }
+
     canvas {
       background: #222;
-      display: block;
-      margin: 20px auto;
-      border: 2px solid #555;
+      border: 5px solid #0f0;
     }
+
     #score {
-      font-size: 1.3em;
+      margin-top: 10px;
+      font-size: 1.2em;
     }
+
     #controls {
-      margin: 20px auto;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
+      display: grid;
+      grid-template-areas:
+        ". up ."
+        "left down right";
+      grid-gap: 10px;
+      margin: 20px;
     }
-    button {
-      background: #333;
-      color: #0f0;
-      font-size: 1.1em;
+
+    #controls button {
+      width: 60px;
+      height: 60px;
+      background-color: #0f0;
+      border: none;
+      font-size: 1.5em;
+      color: #000;
+      border-radius: 8px;
+    }
+
+    #startBtn {
+      background-color: #0f0;
+      color: #000;
+      font-size: 1.2em;
       padding: 10px 20px;
       border: none;
-      border-radius: 5px;
-    }
-    button:hover {
-      background: #555;
+      border-radius: 8px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>🐍 Snake Game</h1>
+  <h1>🐍 Snake - GameBoy Edition</h1>
   <div id="score">Score: 0</div>
-  <canvas id="game" width="400" height="400" tabindex="1"></canvas>
+  <button id="startBtn">▶️ Start Game</button>
+  <canvas id="game" width="400" height="400" style="display:none;" tabindex="1"></canvas>
 
-  <!-- Optional Touch Controls -->
-  <div id="controls">
-    <button onclick="turn('up')">⬆️</button>
-    <button onclick="turn('left')">⬅️</button>
-    <button onclick="turn('down')">⬇️</button>
-    <button onclick="turn('right')">➡️</button>
+  <div id="controls" style="display:none;">
+    <button style="grid-area: up;" onclick="turn('up')">⬆️</button>
+    <button style="grid-area: down;" onclick="turn('down')">⬇️</button>
+    <button style="grid-area: left;" onclick="turn('left')">⬅️</button>
+    <button style="grid-area: right;" onclick="turn('right')">➡️</button>
   </div>
 
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
-    canvas.focus();
+    const scoreDisplay = document.getElementById("score");
+    const startBtn = document.getElementById("startBtn");
+    const controls = document.getElementById("controls");
 
     const tileSize = 20;
     const tileCount = canvas.width / tileSize;
-    let snake = [{ x: 10, y: 10 }];
-    let direction = { x: 1, y: 0 };
-    let nextDirection = { x: 1, y: 0 };
-    let food = randomPosition();
-    let score = 0;
+
+    let snake, direction, nextDirection, food, score, intervalId;
+
+    function initGame() {
+      snake = [{ x: 10, y: 10 }];
+      direction = { x: 1, y: 0 };
+      nextDirection = { x: 1, y: 0 };
+      food = randomPosition();
+      score = 0;
+      scoreDisplay.textContent = "Score: 0";
+    }
 
     function randomPosition() {
       return {
@@ -99,8 +127,9 @@
         head.x >= tileCount || head.y >= tileCount ||
         snake.some(s => s.x === head.x && s.y === head.y)
       ) {
-        alert("Game over! Final score: " + score);
-        location.reload();
+        clearInterval(intervalId);
+        alert("💀 Game over! Final score: " + score);
+        startBtn.style.display = "inline-block";
         return;
       }
 
@@ -108,7 +137,7 @@
 
       if (head.x === food.x && head.y === food.y) {
         score += 10;
-        document.getElementById("score").textContent = "Score: " + score;
+        scoreDisplay.textContent = "Score: " + score;
         food = randomPosition();
       } else {
         snake.pop();
@@ -122,15 +151,20 @@
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       ctx.fillStyle = "#0f0";
-      for (let s of snake) {
-        ctx.fillRect(s.x * tileSize, s.y * tileSize, tileSize - 2, tileSize - 2);
-      }
+      snake.forEach(s => ctx.fillRect(s.x * tileSize, s.y * tileSize, tileSize - 2, tileSize - 2));
 
       ctx.fillStyle = "#f00";
       ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize - 2, tileSize - 2);
     }
 
-    setInterval(gameLoop, 100);
+    startBtn.addEventListener("click", () => {
+      initGame();
+      canvas.style.display = "block";
+      controls.style.display = "grid";
+      startBtn.style.display = "none";
+      intervalId = setInterval(gameLoop, 100);
+      canvas.focus();
+    });
   </script>
 </body>
 </html>
