@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="="en">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Snake GameBoy Edition 🐍</title>
+  <title>Snake GameBoy D-Pad 🐍</title>
   <style>
     body {
       background: #1a1a1a;
@@ -25,41 +25,46 @@
       margin-top: 10px;
       font-size: 1.2em;
     }
-    #controls {
+    #dpad {
       display: grid;
       grid-template-areas:
         ". up ."
-        "left down right";
-      grid-gap: 10px;
+        "left center right"
+        ". down .";
+      grid-gap: 5px;
       margin: 20px;
     }
-    #controls button, #startBtn {
-      width: 60px;
-      height: 60px;
+    #dpad button {
+      width: 50px;
+      height: 50px;
       background-color: #0f0;
       border: none;
       font-size: 1.5em;
       color: #000;
-      border-radius: 8px;
+      border-radius: 5px;
     }
     #startBtn {
+      background-color: #0f0;
+      color: #000;
       font-size: 1.2em;
       padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
       margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>🐍 Snake - GameBoy Edition</h1>
+  <h1>🐍 Snake - GameBoy D-Pad</h1>
   <div id="score">Score: 0</div>
   <button id="startBtn">▶️ Start Game</button>
   <canvas id="game" width="400" height="400" style="display:none;" tabindex="1"></canvas>
-
-  <div id="controls" style="display:none;">
-    <button style="grid-area: up;" onclick="turn('up')">⬆️</button>
-    <button style="grid-area: down;" onclick="turn('down')">⬇️</button>
-    <button style="grid-area: left;" onclick="turn('left')">⬅️</button>
-    <button style="grid-area: right;" onclick="turn('right')">➡️</button>
+  <div id="dpad" style="display:none;">
+    <button style="grid-area: up;" onclick="turn('up')">▲</button>
+    <button style="grid-area: left;" onclick="turn('left')">◀</button>
+    <div style="grid-area: center;"></div>
+    <button style="grid-area: right;" onclick="turn('right')">▶</button>
+    <button style="grid-area: down;" onclick="turn('down')">▼</button>
   </div>
 
   <script>
@@ -67,7 +72,7 @@
     const ctx = canvas.getContext("2d");
     const scoreDisplay = document.getElementById("score");
     const startBtn = document.getElementById("startBtn");
-    const controls = document.getElementById("controls");
+    const dpad = document.getElementById("dpad");
 
     const tileSize = 20;
     const tileCount = canvas.width / tileSize;
@@ -109,7 +114,7 @@
     function gameLoop(timestamp) {
       if (!gameRunning) return;
 
-      if (timestamp - lastMoveTime > 160) {  // 160ms = smoother speed
+      if (timestamp - lastMoveTime > 250) { // slower speed for easier play
         direction = nextDirection;
         const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
 
@@ -157,7 +162,7 @@
     startBtn.addEventListener("click", () => {
       initGame();
       canvas.style.display = "block";
-      controls.style.display = "grid";
+      dpad.style.display = "grid";
       startBtn.style.display = "none";
       canvas.focus();
     });
