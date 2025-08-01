@@ -1,122 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Snake GameBoy Edition 🐍</title>
-  <style>
-    body {
-      background: #1a1a1a;
-      font-family: monospace;
-      color: #0f0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+<script>
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+  const scoreDisplay = document.getElementById("score");
+  const startBtn = document.getElementById("startBtn");
+  const controls = document.getElementById("controls");
 
-    h1 {
-      margin: 20px;
-      color: #0f0;
-    }
+  const tileSize = 20;
+  const tileCount = canvas.width / tileSize;
 
-    canvas {
-      background: #222;
-      border: 5px solid #0f0;
-    }
+  let snake, direction, nextDirection, food, score, gameRunning;
+  let lastUpdateTime = 0;
+  let interval = 160; // slow it down a bit
 
-    #score {
-      margin-top: 10px;
-      font-size: 1.2em;
-    }
+  function initGame() {
+    snake = [{ x: 10, y: 10 }];
+    direction = { x: 1, y: 0 };
+    nextDirection = { x: 1, y: 0 };
+    food = randomPosition();
+    score = 0;
+    scoreDisplay.textContent = "Score: 0";
+    gameRunning = true;
+    lastUpdateTime = 0;
+    requestAnimationFrame(gameLoop);
+  }
 
-    #controls {
-      display: grid;
-      grid-template-areas:
-        ". up ."
-        "left down right";
-      grid-gap: 10px;
-      margin: 20px;
-    }
+  function randomPosition() {
+    return {
+      x: Math.floor(Math.random() * tileCount),
+      y: Math.floor(Math.random() * tileCount)
+    };
+  }
 
-    #controls button {
-      width: 60px;
-      height: 60px;
-      background-color: #0f0;
-      border: none;
-      font-size: 1.5em;
-      color: #000;
-      border-radius: 8px;
-    }
+  function turn(dir) {
+    if (dir === 'up' && direction.y !== 1) nextDirection = { x: 0, y: -1 };
+    if (dir === 'down' && direction.y !== -1) nextDirection = { x: 0, y: 1 };
+    if (dir === 'left' && direction.x !== 1) nextDirection = { x: -1, y: 0 };
+    if (dir === 'right' && direction.x !== -1) nextDirection = { x: 1, y: 0 };
+  }
 
-    #startBtn {
-      background-color: #0f0;
-      color: #000;
-      font-size: 1.2em;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      margin-top: 10px;
-    }
-  </style>
-</head>
-<body>
-  <h1>🐍 Snake - GameBoy Edition</h1>
-  <div id="score">Score: 0</div>
-  <button id="startBtn">▶️ Start Game</button>
-  <canvas id="game" width="400" height="400" style="display:none;" tabindex="1"></canvas>
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowUp") turn("up");
+    if (e.key === "ArrowDown") turn("down");
+    if (e.key === "ArrowLeft") turn("left");
+    if (e.key === "ArrowRight") turn("right");
+  });
 
-  <div id="controls" style="display:none;">
-    <button style="grid-area: up;" onclick="turn('up')">⬆️</button>
-    <button style="grid-area: down;" onclick="turn('down')">⬇️</button>
-    <button style="grid-area: left;" onclick="turn('left')">⬅️</button>
-    <button style="grid-area: right;" onclick="turn('right')">➡️</button>
-  </div>
+  function gameLoop(currentTime) {
+    if (!gameRunning) return;
 
-  <script>
-    const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
-    const scoreDisplay = document.getElementById("score");
-    const startBtn = document.getElementById("startBtn");
-    const controls = document.getElementById("controls");
-
-    const tileSize = 20;
-    const tileCount = canvas.width / tileSize;
-
-    let snake, direction, nextDirection, food, score, intervalId;
-
-    function initGame() {
-      snake = [{ x: 10, y: 10 }];
-      direction = { x: 1, y: 0 };
-      nextDirection = { x: 1, y: 0 };
-      food = randomPosition();
-      score = 0;
-      scoreDisplay.textContent = "Score: 0";
-    }
-
-    function randomPosition() {
-      return {
-        x: Math.floor(Math.random() * tileCount),
-        y: Math.floor(Math.random() * tileCount)
-      };
-    }
-
-    function turn(dir) {
-      if (dir === 'up' && direction.y !== 1) nextDirection = { x: 0, y: -1 };
-      if (dir === 'down' && direction.y !== -1) nextDirection = { x: 0, y: 1 };
-      if (dir === 'left' && direction.x !== 1) nextDirection = { x: -1, y: 0 };
-      if (dir === 'right' && direction.x !== -1) nextDirection = { x: 1, y: 0 };
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowUp") turn("up");
-      if (e.key === "ArrowDown") turn("down");
-      if (e.key === "ArrowLeft") turn("left");
-      if (e.key === "ArrowRight") turn("right");
-    });
-
-    function gameLoop() {
+    if (currentTime - lastUpdateTime > interval) {
       direction = nextDirection;
-
       const head = {
         x: snake[0].x + direction.x,
         y: snake[0].y + direction.y
@@ -127,9 +60,9 @@
         head.x >= tileCount || head.y >= tileCount ||
         snake.some(s => s.x === head.x && s.y === head.y)
       ) {
-        clearInterval(intervalId);
         alert("💀 Game over! Final score: " + score);
         startBtn.style.display = "inline-block";
+        gameRunning = false;
         return;
       }
 
@@ -144,27 +77,30 @@
       }
 
       draw();
+      lastUpdateTime = currentTime;
     }
 
-    function draw() {
-      ctx.fillStyle = "#222";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    requestAnimationFrame(gameLoop);
+  }
 
-      ctx.fillStyle = "#0f0";
-      snake.forEach(s => ctx.fillRect(s.x * tileSize, s.y * tileSize, tileSize - 2, tileSize - 2));
+  function draw() {
+    ctx.fillStyle = "#222";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = "#f00";
-      ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize - 2, tileSize - 2);
+    ctx.fillStyle = "#0f0";
+    for (let s of snake) {
+      ctx.fillRect(s.x * tileSize, s.y * tileSize, tileSize - 2, tileSize - 2);
     }
 
-    startBtn.addEventListener("click", () => {
-      initGame();
-      canvas.style.display = "block";
-      controls.style.display = "grid";
-      startBtn.style.display = "none";
-      intervalId = setInterval(gameLoop, 100);
-      canvas.focus();
-    });
-  </script>
-</body>
-</html>
+    ctx.fillStyle = "#f00";
+    ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize - 2, tileSize - 2);
+  }
+
+  startBtn.addEventListener("click", () => {
+    initGame();
+    canvas.style.display = "block";
+    controls.style.display = "grid";
+    startBtn.style.display = "none";
+    canvas.focus();
+  });
+</script>
